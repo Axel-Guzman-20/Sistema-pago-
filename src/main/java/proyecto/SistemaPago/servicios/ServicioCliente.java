@@ -7,6 +7,9 @@ import proyecto.SistemaPago.entidades.Cliente;
 import proyecto.SistemaPago.exceptions.EmailClienteNotFoundException;
 import proyecto.SistemaPago.repositorios.ClienteRepositorio;
 
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 @Service
 @Slf4j
 public class ServicioCliente {
@@ -14,9 +17,13 @@ public class ServicioCliente {
     ClienteRepositorio repositorioCliente;
 
     public Cliente recuperarClienteByCorreoElectronico(String correoElectronico) {
-        var cliente = repositorioCliente.findByCorreoElectronico(correoElectronico);
-        if(cliente.isEmpty())
-            throw new EmailClienteNotFoundException("No se encontró el cliente con el correo electrónico");
-        return cliente.get();
+        Cliente cliente = repositorioCliente.findByCorreoElectronico(correoElectronico);
+        return  cliente;
+    }
+
+    public boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+        Pattern pat = Pattern.compile(emailRegex);
+        return pat.matcher(email).matches();
     }
 }

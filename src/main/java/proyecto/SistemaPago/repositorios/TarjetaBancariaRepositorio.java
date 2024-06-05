@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 import proyecto.SistemaPago.entidades.TarjetaBancaria;
 @Repository
 public interface TarjetaBancariaRepositorio extends JpaRepository<TarjetaBancaria, String> {
+    TarjetaBancaria findByNumeroTarjeta(String numeroTarjeta);
 }

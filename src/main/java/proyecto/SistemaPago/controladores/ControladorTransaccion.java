@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import proyecto.SistemaPago.entidades.Transaccion;
+import proyecto.SistemaPago.modelosDto.TransaccionRequestDto;
+import proyecto.SistemaPago.modelosDto.TransaccionResponseDto;
 import proyecto.SistemaPago.servicios.ServicioTransaccion;
 
 import java.util.List;
@@ -19,10 +21,17 @@ public class ControladorTransaccion {
     ServicioTransaccion serviciotransaccion;
 
     @PostMapping("/transaccion")
-    public ResponseEntity<Transaccion> realizarCargo(Transaccion nuevatransaccion) {
-        var transaccionRealizada = serviciotransaccion.realizarCargo(nuevatransaccion);
-        return ResponseEntity.status(HttpStatus.CREATED).body(transaccionRealizada);
+    public ResponseEntity<TransaccionResponseDto> createTransaccion(@RequestBody TransaccionRequestDto transaccionRequest) {
+        TransaccionResponseDto cargo = serviciotransaccion.crearTransaccion(transaccionRequest);
+
+        if (cargo.getStatusCode() == 400) {
+            return ResponseEntity.badRequest().body(cargo);
+        }
+
+        return ResponseEntity.ok(cargo);
     }
+}
+/*
 
     @GetMapping("/transaccion")
     public ResponseEntity<List<Transaccion>> recuperarTransacciones() {
@@ -37,3 +46,4 @@ public class ControladorTransaccion {
     }
 
 }
+*/

@@ -20,17 +20,6 @@ public class Transaccion {
 
     private double monto;
 
-    private String correoElectronico;
-
-   // private String numeroTarjeta;
-
-    private String cvv;
-
-    private String anioExpiracion;
-
-    private String mesExpiracion;
-
-    private String nombre;
 
     private boolean TransaccionAprobado;
 
