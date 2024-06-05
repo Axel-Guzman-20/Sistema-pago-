@@ -14,4 +14,6 @@ public interface TransaccionRepositorio extends JpaRepository<Transaccion, UUID>
 
     int countByClienteCorreoElectronicoAndTimeStampChargeAfter(String correoElectronico, Timestamp timestamp);
 
+    List<Transaccion> findAll();
+
 }

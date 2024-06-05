@@ -7,13 +7,13 @@ import proyecto.SistemaPago.entidades.Cliente;
 import proyecto.SistemaPago.entidades.TarjetaBancaria;
 import proyecto.SistemaPago.entidades.Transaccion;
 import proyecto.SistemaPago.enums.MarcaTarjetaBancaria;
+import proyecto.SistemaPago.modelosDto.DetallesTransaccionesDto;
 import proyecto.SistemaPago.modelosDto.TransaccionRequestDto;
 import proyecto.SistemaPago.modelosDto.TransaccionResponseDto;
 import proyecto.SistemaPago.repositorios.TransaccionRepositorio;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.*;
 
 @Service
@@ -54,23 +54,6 @@ public class ServicioTransaccion {
         }
 
         if (!errors.isEmpty()) {
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
-
-        // Verificar que la tarjeta exista
-        tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
-        if (tarjeta == null) {
-            errors.put("cardNumber", "La tarjeta no se encuentra registrada.");
-        }
-
-        if (!errors.isEmpty()) {
-            log.warn("Errores de validación encontrados: {}", errors);
             return TransaccionResponseDto.builder()
                     .statusCode(400)
                     .message("La transacción no se procesó debido a errores de validación.")
@@ -190,6 +173,55 @@ public class ServicioTransaccion {
                 .errors(new HashMap<>())
                 .build();
     }
+
+
+    public List<DetallesTransaccionesDto> obtenerTransacciones() {
+        List<Transaccion> transacciones = repositoriotransaccion.findAll();
+        List<DetallesTransaccionesDto> responseDtos = new ArrayList<>();
+
+        for (Transaccion transaccion : transacciones) {
+            String cardNumberMasked = maskCardNumber(transaccion.getTarjetaBancaria().getNumeroTarjeta());
+            responseDtos.add(DetallesTransaccionesDto.builder()
+                    .transactionId(transaccion.getIdTransaccion())
+                    .amount(transaccion.getMonto())
+                    .brand(transaccion.getTarjetaBancaria().getMarca().getMarca())
+                    .bank(transaccion.getTarjetaBancaria().getBanco().getNombreCompleto())
+                    .cardNumber(cardNumberMasked)
+                    .approved(transaccion.isTransaccionAprobado())
+                    .build());
+        }
+        return responseDtos;
+    }
+
+    public Optional<DetallesTransaccionesDto> obtenerTransaccionPorId(UUID transactionId) {
+        Optional<Transaccion> transaccionOpt = repositoriotransaccion.findById(transactionId);
+
+        if (transaccionOpt.isPresent()) {
+            Transaccion transaccion = transaccionOpt.get();
+            String cardNumberMasked = maskCardNumber(transaccion.getTarjetaBancaria().getNumeroTarjeta());
+            DetallesTransaccionesDto detallesTransaccion = DetallesTransaccionesDto.builder()
+                    .transactionId(transaccion.getIdTransaccion())
+                    .amount(transaccion.getMonto())
+                    .brand(transaccion.getTarjetaBancaria().getMarca().getMarca())
+                    .bank(transaccion.getTarjetaBancaria().getBanco().getNombreCompleto())
+                    .cardNumber(cardNumberMasked)
+                    .approved(transaccion.isTransaccionAprobado())
+                    .build();
+            return Optional.of(detallesTransaccion);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+
+
+
+    private String maskCardNumber(String cardNumber) {
+        return cardNumber.substring(0, 6) + "XXXXXX" + cardNumber.substring(cardNumber.length() - 4);
+    }
+
+
+
 
     private Map<String, String> validateTransaccion(TransaccionRequestDto transaccionRequest) {
         Map<String, String> errors = new HashMap<>();

@@ -3,13 +3,16 @@ package proyecto.SistemaPago.controladores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
-import proyecto.SistemaPago.entidades.Transaccion;
+import proyecto.SistemaPago.modelosDto.DetallesTransaccionesDto;
 import proyecto.SistemaPago.modelosDto.TransaccionRequestDto;
 import proyecto.SistemaPago.modelosDto.TransaccionResponseDto;
 import proyecto.SistemaPago.servicios.ServicioTransaccion;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 
 @CrossOrigin(origins = "*")
@@ -30,20 +33,21 @@ public class ControladorTransaccion {
 
         return ResponseEntity.ok(cargo);
     }
-}
-/*
 
     @GetMapping("/transaccion")
-    public ResponseEntity<List<Transaccion>> recuperarTransacciones() {
-        var detallesTransaccionesDto = serviciotransaccion.recuperarTransacciones();
-        return ResponseEntity.status(HttpStatus.OK).body(detallesTransaccionesDto);
+    public ResponseEntity<List<DetallesTransaccionesDto>> getAllTransacciones() {
+        List<DetallesTransaccionesDto> transacciones = serviciotransaccion.obtenerTransacciones();
+        return new ResponseEntity<>(transacciones, HttpStatus.OK);
     }
 
-    @GetMapping("/transaccion/{id}")
-    public ResponseEntity<Transaccion> recuperarTransaccion(String transactionId) {
-        var detallesTransaccionDto = serviciotransaccion.recuperarTransaccion(transactionId);
-        return ResponseEntity.status(HttpStatus.OK).body(detallesTransaccionDto);
-    }
+    @GetMapping("/transaccion/{transactionId}")
+    public ResponseEntity<?> obtenerTransaccionPorId(@PathVariable UUID transactionId) {
+        Optional<DetallesTransaccionesDto> detallesTransaccionOpt = serviciotransaccion.obtenerTransaccionPorId(transactionId);
 
+        if (detallesTransaccionOpt.isPresent()) {
+            return new ResponseEntity<>(detallesTransaccionOpt.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("No hay registro de transacción con el Id: "+transactionId, HttpStatus.NOT_FOUND);
+        }
+    }
 }
-*/
