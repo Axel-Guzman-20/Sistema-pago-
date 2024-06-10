@@ -71,7 +71,7 @@ public class ServicioTransaccion {
             errors.put("email", "No puede realizar más de 2 transacciones con el mismo correo en 5 minutos.");
             return TransaccionResponseDto.builder()
                     .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
+                    .message("No puede realizar más de 2 transacciones con el mismo correo en 5 minutos..")
                     .transactionId(UUID.randomUUID())
                     .approved(false)
                     .errors(errors)
@@ -90,7 +90,7 @@ public class ServicioTransaccion {
             log.warn("Errores de validación encontrados: {}", errors);
             return TransaccionResponseDto.builder()
                     .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
+                    .message("El número de tarjeta no corresponde con el titular de la tarjeta.")
                     .transactionId(UUID.randomUUID())
                     .approved(false)
                     .errors(errors)
@@ -107,7 +107,7 @@ public class ServicioTransaccion {
             log.warn("Errores de validación encontrados: {}", errors);
             return TransaccionResponseDto.builder()
                     .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
+                    .message("El CVV no corresponde con la tarjeta bancaria.")
                     .transactionId(UUID.randomUUID())
                     .approved(false)
                     .errors(errors)
@@ -124,7 +124,7 @@ public class ServicioTransaccion {
             log.warn("Errores de validación encontrados: {}", errors);
             return TransaccionResponseDto.builder()
                     .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
+                    .message("El correo no se encuentra registrado.")
                     .transactionId(UUID.randomUUID())
                     .approved(false)
                     .errors(errors)
@@ -146,12 +146,30 @@ public class ServicioTransaccion {
             log.warn("Errores de validación encontrados: {}", errors);
             return TransaccionResponseDto.builder()
                     .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
+                    .message("La fecha de vencimiento de la tarjeta no coincide con la proporcionada.")
                     .transactionId(UUID.randomUUID())
                     .approved(false)
                     .errors(errors)
                     .build();
         }
+
+        // Verificar que el nombre del titular de la tarjeta coincida con el registrado en la base de datos
+        if (cliente != null) {
+            String[] nombreCompleto = transaccionRequest.getCardholderName().split("\\s+");
+            if (nombreCompleto.length != 2 || !nombreCompleto[0].equals(cliente.getNombre()) || !nombreCompleto[1].equals(cliente.getApellido())) {
+                errors.put("cardholderName", "El nombre y apellido del titular de la tarjeta no coinciden con los registrados en la base de datos.");
+            }
+        }
+        if (!errors.isEmpty()) {
+            return TransaccionResponseDto.builder()
+                    .statusCode(400)
+                    .message("El nombre del titular de la tarjeta no coincide con el registrado en la base de datos")
+                    .transactionId(UUID.randomUUID())
+                    .approved(false)
+                    .errors(errors)
+                    .build();
+        }
+
 
 
         // Procesar la transacción
