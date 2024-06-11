@@ -31,146 +31,44 @@ public class ServicioTransaccion {
     private TransaccionRepositorio repositoriotransaccion;
 
     public TransaccionResponseDto crearTransaccion(TransaccionRequestDto transaccionRequest) {
-        log.info("Procesando transacción con los siguientes datos: {}", transaccionRequest);
+
         Map<String, String> errors = validateTransaccion(transaccionRequest);
 
         if (!errors.isEmpty()) {
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
+            return buildErrorResponse(errors);
         }
 
-        // Verificar montos máximos por marca de tarjeta
+
         TarjetaBancaria tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
-
-        if (tarjeta.getMarca() == MarcaTarjetaBancaria.MASTERCARD && transaccionRequest.getAmount().compareTo(Double.valueOf(5000)) > 0) {
-            errors.put("amount", "El monto máximo para tarjetas MasterCard es $5,000 MXN.");
-        } else if (tarjeta.getMarca() == MarcaTarjetaBancaria.VISA && transaccionRequest.getAmount().compareTo(Double.valueOf(10000)) > 0) {
-            errors.put("amount", "El monto máximo para tarjetas Visa es $10,000 MXN.");
-        }
-
-        if (!errors.isEmpty()) {
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("La transacción no se procesó debido a errores de validación.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
-
-        // Verificar máximo de 2 transacciones con el mismo correo en 5 minutos
-        Timestamp fiveMinutesAgo = Timestamp.valueOf(LocalDateTime.now().minusMinutes(5));
-        int recentTransactions = repositoriotransaccion.countByClienteCorreoElectronicoAndTimeStampChargeAfter(transaccionRequest.getEmail(), fiveMinutesAgo);
-
-        if (recentTransactions >= 2) {
-            errors.put("email", "No puede realizar más de 2 transacciones con el mismo correo en 5 minutos.");
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("No puede realizar más de 2 transacciones con el mismo correo en 5 minutos..")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
-     //   Verifica que el numero de tarjeta corresponda con el titular de la tarjeta
         Cliente cliente = serviciocliente.recuperarClienteByCorreoElectronico(transaccionRequest.getEmail());
-        if (cliente != null) {
-           tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
-            if (tarjeta != null && !tarjeta.getCliente().equals(cliente)) {
-                errors.put("cardNumber", "El número de tarjeta no corresponde con el titular de la tarjeta.");
-            }
-        }
-
-        if (!errors.isEmpty()) {
-            log.warn("Errores de validación encontrados: {}", errors);
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("El número de tarjeta no corresponde con el titular de la tarjeta.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
-
-        // Verificar que el CVV corresponda con la tarjeta bancaria
-        tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
-        if (tarjeta != null && !transaccionRequest.getCvv().equals(tarjeta.getCvv())) {
-            errors.put("cvv", "El CVV no corresponde con la tarjeta bancaria.");
-        }
-
-        if (!errors.isEmpty()) {
-            log.warn("Errores de validación encontrados: {}", errors);
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("El CVV no corresponde con la tarjeta bancaria.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
 
         // Verificar que el correo exista
-        cliente =serviciocliente.recuperarClienteByCorreoElectronico(transaccionRequest.getEmail());
-        if (cliente == null ){
-            errors.put("email", "El correo no se encuentra registrado.");
-        }
+        verificarCorreoExistente(transaccionRequest, cliente, errors);
 
-        if (!errors.isEmpty()) {
-            log.warn("Errores de validación encontrados: {}", errors);
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("El correo no se encuentra registrado.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
+
+        // Verificar montos máximos por marca de tarjeta
+        verificarMontosMaximos(transaccionRequest, tarjeta, errors);
+
+        // Verificar máximo de 2 transacciones con el mismo correo en 5 minutos
+        verificarMaximoTransacciones(transaccionRequest, errors);
+
+        // Verifica que el numero de tarjeta corresponda con el titular de la tarjeta
+        verificarTitularTarjeta(transaccionRequest, tarjeta, cliente, errors);
+
+        // Verificar que el CVV corresponda con la tarjeta bancaria
+        verificarCvv(transaccionRequest, tarjeta, errors);
 
 
 
         // Verificar que el mes y el año de vencimiento coincidan con la tarjeta bancaria
-        tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
-        if (tarjeta != null) {
-            if (!transaccionRequest.getExpirationYear().equals(tarjeta.getAnioExpiracion().substring(2)) ||
-                    !transaccionRequest.getExpirationMonth().equals(tarjeta.getMesExpiracion())) {
-                errors.put("expirationDate", "La fecha de vencimiento de la tarjeta no coincide con la proporcionada.");
-            }
-        }
-
-        if (!errors.isEmpty()) {
-            log.warn("Errores de validación encontrados: {}", errors);
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("La fecha de vencimiento de la tarjeta no coincide con la proporcionada.")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
-        }
+        verificarFechaVencimiento(transaccionRequest, tarjeta, errors);
 
         // Verificar que el nombre del titular de la tarjeta coincida con el registrado en la base de datos
-        if (cliente != null) {
-            String[] nombreCompleto = transaccionRequest.getCardholderName().split("\\s+");
-            if (nombreCompleto.length != 2 || !nombreCompleto[0].equals(cliente.getNombre()) || !nombreCompleto[1].equals(cliente.getApellido())) {
-                errors.put("cardholderName", "El nombre y apellido del titular de la tarjeta no coinciden con los registrados en la base de datos.");
-            }
-        }
+        verificarNombreTitular(transaccionRequest, cliente, errors);
+
         if (!errors.isEmpty()) {
-            return TransaccionResponseDto.builder()
-                    .statusCode(400)
-                    .message("El nombre del titular de la tarjeta no coincide con el registrado en la base de datos")
-                    .transactionId(UUID.randomUUID())
-                    .approved(false)
-                    .errors(errors)
-                    .build();
+            return buildErrorResponse(errors);
         }
-
-
 
         // Procesar la transacción
         Transaccion transaccion = new Transaccion();
@@ -239,7 +137,75 @@ public class ServicioTransaccion {
     }
 
 
+    private void verificarMontosMaximos(TransaccionRequestDto transaccionRequest, TarjetaBancaria tarjeta, Map<String, String> errors) {
+        if (tarjeta.getMarca() == MarcaTarjetaBancaria.MASTERCARD && transaccionRequest.getAmount().compareTo(Double.valueOf(5000)) > 0) {
+            errors.put("amount", "El monto máximo para tarjetas MasterCard es $5,000 MXN.");
+        } else if (tarjeta.getMarca() == MarcaTarjetaBancaria.VISA && transaccionRequest.getAmount().compareTo(Double.valueOf(10000)) > 0) {
+            errors.put("amount", "El monto máximo para tarjetas Visa es $10,000 MXN.");
+        }
+    }
 
+    private void verificarMaximoTransacciones(TransaccionRequestDto transaccionRequest, Map<String, String> errors) {
+        Timestamp fiveMinutesAgo = Timestamp.valueOf(LocalDateTime.now().minusMinutes(5));
+        int recentTransactions = repositoriotransaccion.countByClienteCorreoElectronicoAndTimeStampChargeAfter(transaccionRequest.getEmail(), fiveMinutesAgo);
+
+        if (recentTransactions >= 2) {
+            errors.put("email", "No puede realizar más de 2 transacciones con el mismo correo en 5 minutos.");
+        }
+    }
+
+    private void verificarTitularTarjeta(TransaccionRequestDto transaccionRequest, TarjetaBancaria tarjeta, Cliente cliente, Map<String, String> errors) {
+        if (cliente != null) {
+            tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
+            if (tarjeta != null && !tarjeta.getCliente().equals(cliente)) {
+                errors.put("cardNumber", "El número de tarjeta no corresponde con el titular de la tarjeta.");
+            }
+        }
+    }
+
+    private void verificarCvv(TransaccionRequestDto transaccionRequest, TarjetaBancaria tarjeta, Map<String, String> errors) {
+        tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
+        if (tarjeta != null && !transaccionRequest.getCvv().equals(tarjeta.getCvv())) {
+            errors.put("cvv", "El CVV no corresponde con la tarjeta bancaria.");
+        }
+    }
+
+    private void verificarCorreoExistente(TransaccionRequestDto transaccionRequest, Cliente cliente, Map<String, String> errors) {
+        cliente = serviciocliente.recuperarClienteByCorreoElectronico(transaccionRequest.getEmail());
+        if (cliente == null ){
+            errors.put("email", "El correo no se encuentra registrado.");
+        }
+    }
+
+    private void verificarFechaVencimiento(TransaccionRequestDto transaccionRequest, TarjetaBancaria tarjeta, Map<String, String> errors) {
+        tarjeta = servicioTarjetaBancaria.recuperarTarjetaBancariaCliente(transaccionRequest.getCardNumber());
+        if (tarjeta != null) {
+            if (!transaccionRequest.getExpirationYear().equals(tarjeta.getAnioExpiracion().substring(2)) ||
+                    !transaccionRequest.getExpirationMonth().equals(tarjeta.getMesExpiracion())) {
+                errors.put("expirationDate", "La fecha de vencimiento de la tarjeta no coincide con la proporcionada.");
+            }
+        }
+    }
+
+    private void verificarNombreTitular(TransaccionRequestDto transaccionRequest, Cliente cliente, Map<String, String> errors) {
+        if (cliente != null) {
+            String[] nombreCompleto = transaccionRequest.getCardholderName().split("\\s+");
+            if (nombreCompleto.length != 2 || !nombreCompleto[0].equals(cliente.getNombre()) || !nombreCompleto[1].equals(cliente.getApellido())) {
+                errors.put("cardholderName", "El nombre y apellido del titular de la tarjeta no coinciden con los registrados en la base de datos.");
+            }
+        }
+    }
+
+    private TransaccionResponseDto buildErrorResponse(Map<String, String> errors) {
+        System.out.println("Errores de validación: " + errors);
+        return TransaccionResponseDto.builder()
+                .statusCode(400)
+                .message("La transacción no se procesó debido a errores de validación.")
+                .transactionId(UUID.randomUUID())
+                .approved(false)
+                .errors(errors)
+                .build();
+    }
 
     private Map<String, String> validateTransaccion(TransaccionRequestDto transaccionRequest) {
         Map<String, String> errors = new HashMap<>();
