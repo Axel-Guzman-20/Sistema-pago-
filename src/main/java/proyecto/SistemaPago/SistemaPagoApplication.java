@@ -42,10 +42,10 @@ public class SistemaPagoApplication {
 
 	public void agregarBancos() {
 		var bancos = Stream.of(
-						Banco.builder().nombreCompleto("Banco Nacional de México, S.A.").nombreAbreviado("BANAMEX"),
-						Banco.builder().nombreCompleto("BBVA Bancomer, S.A.").nombreAbreviado("BANCOMER"),
-						Banco.builder().nombreCompleto("Banco Santander, S.A.").nombreAbreviado("SANTANDER SERFIN"),
-						Banco.builder().nombreCompleto("Scotiabank Inverlat, S.A.").nombreAbreviado("SCOTIABANK")
+						Banco.builder().nombreCompleto("Banco Internacional del Pais México, S.A.").nombreAbreviado("BIPM"),
+						Banco.builder().nombreCompleto("Banco Fuerte del Pais, S.A.").nombreAbreviado("BFP"),
+						Banco.builder().nombreCompleto("Banco Santa, S.A.").nombreAbreviado("SA"),
+						Banco.builder().nombreCompleto("Banco Prueba Inverlat, S.A.").nombreAbreviado("BPI")
 				)
 				.map(Banco.BancoBuilder::build)
 				.toList();
@@ -54,10 +54,10 @@ public class SistemaPagoApplication {
 
 	public void agregarClientes() {
 		var clientes = Stream.of(
-						Cliente.builder().idCliente("ABCD123456AS4").nombre("Francisco").apellido("Lopez").correoElectronico("francisco.lopez@correo.com"),
-						Cliente.builder().idCliente("HJKL985695BG5").nombre("Mateo").apellido("Primero").correoElectronico("mateo.primero@dominio.com"),
-						Cliente.builder().idCliente("YHBV143254JY6").nombre("Lucas").apellido("Pit").correoElectronico("lucas.pit@email.com.mx"),
-						Cliente.builder().idCliente("QWER582645JH2").nombre("Felipe").apellido("Montiel").correoElectronico("felipe.montiel@electronico.gob.mx")
+						Cliente.builder().idCliente("ABCD123456AS4").nombre("Axel").apellido("Lopez").correoElectronico("axel.lopez@prueba.com"),
+						Cliente.builder().idCliente("HJKL985695BG5").nombre("David").apellido("Perez").correoElectronico("david.perez@hotmail.com"),
+						Cliente.builder().idCliente("YHBV143254JY6").nombre("Ani").apellido("Gonzales").correoElectronico("ani.gonzales@email.com.mx"),
+						Cliente.builder().idCliente("QWER582645JH2").nombre("Micke").apellido("Zavala").correoElectronico("micke.zavala@gmail.com")
 				)
 				.map(Cliente.ClienteBuilder::build)
 				.toList();
@@ -66,21 +66,21 @@ public class SistemaPagoApplication {
 
 	public void agregarTarjetasBancarias() {
 
-		var clienteFrancisco = Cliente.builder().idCliente("ABCD123456AS4").nombre("Francisco").apellido("Lopez").correoElectronico("francisco.lopez@correo.com").build();
-		var clienteMateo = Cliente.builder().idCliente("HJKL985695BG5").nombre("Mateo").apellido("Primero").correoElectronico("mateo.primero@dominio.com").build();
-		var clienteLucas = Cliente.builder().idCliente("YHBV143254JY6").nombre("Lucas").apellido("Pit").correoElectronico("lucas.pit@email.com.mx").build();
-		var clienteFelipe = Cliente.builder().idCliente("QWER582645JH2").nombre("Felipe").apellido("Montiel").correoElectronico("felipe.montiel@electronico.gob.mx").build();
+		var clienteAxel = Cliente.builder().idCliente("ABCD123456AS4").nombre("Axel").apellido("Lopez").correoElectronico("axel.lopez@prueba.com").build();
+		var clienteDavid = Cliente.builder().idCliente("HJKL985695BG5").nombre("David").apellido("Perez").correoElectronico("david.perez@hotmail.com").build();
+		var clienteAni = Cliente.builder().idCliente("YHBV143254JY6").nombre("Ani").apellido("Gonzales").correoElectronico("ani.gonzales@email.com.mx").build();
+		var clienteMicke = Cliente.builder().idCliente("QWER582645JH2").nombre("Micke").apellido("Zavala").correoElectronico("fmicke.zavala@gmail.com").build();
 
-		var bancoBanamex = Banco.builder().idBanco(1).nombreCompleto("Banco Nacional de México, S.A.").nombreAbreviado("BANAMEX").build();
-		var bancoBancomer = Banco.builder().idBanco(2).nombreCompleto("BBVA Bancomer, S.A.").nombreAbreviado("BANCOMER").build();
-		var bancoSantander = Banco.builder().idBanco(3).nombreCompleto("Banco Santander, S.A.").nombreAbreviado("SANTANDER SERFIN").build();
-		var bancoScotiabank = Banco.builder().idBanco(4).nombreCompleto("Scotiabank Inverlat, S.A.").nombreAbreviado("SCOTIABANK").build();
+		var bancoBIPM = Banco.builder().idBanco(1).nombreCompleto("Banco Internacional del Pais México, S.A.").nombreAbreviado("BIPM").build();
+		var bancoBFP = Banco.builder().idBanco(2).nombreCompleto("Banco Fuerte del Pais, S.A.").nombreAbreviado("BFP").build();
+		var bancoSA = Banco.builder().idBanco(3).nombreCompleto("Banco Santa, S.A.").nombreAbreviado("SA").build();
+		var bancoBPI = Banco.builder().idBanco(4).nombreCompleto("Banco Prueba Inverlat, S.A.").nombreAbreviado("BPI").build();
 
 		var tarjetasBancarias = Stream.of(
-						TarjetaBancaria.builder().numeroTarjeta("4111111111111111").cvv("123").anioExpiracion("2023").mesExpiracion("05").marca(MarcaTarjetaBancaria.VISA).cliente(clienteFrancisco).banco(bancoBanamex),
-						TarjetaBancaria.builder().numeroTarjeta("4242424242424242").cvv("321").anioExpiracion("2024").mesExpiracion("11").marca(MarcaTarjetaBancaria.VISA).cliente(clienteMateo).banco(bancoBancomer),
-						TarjetaBancaria.builder().numeroTarjeta("5555555555554444").cvv("456").anioExpiracion("2025").mesExpiracion("10").marca(MarcaTarjetaBancaria.MASTERCARD).cliente(clienteLucas).banco(bancoSantander),
-						TarjetaBancaria.builder().numeroTarjeta("5105105105105100").cvv("654").anioExpiracion("2026").mesExpiracion("09").marca(MarcaTarjetaBancaria.MASTERCARD).cliente(clienteFelipe).banco(bancoScotiabank)
+						TarjetaBancaria.builder().numeroTarjeta("4112123987502195").cvv("123").anioExpiracion("2023").mesExpiracion("05").marca(MarcaTarjetaBancaria.VISA).cliente(clienteAxel).banco(bancoBIPM),
+						TarjetaBancaria.builder().numeroTarjeta("4112968086408732").cvv("321").anioExpiracion("2024").mesExpiracion("11").marca(MarcaTarjetaBancaria.VISA).cliente(clienteDavid).banco(bancoBFP),
+						TarjetaBancaria.builder().numeroTarjeta("5105843095412954").cvv("456").anioExpiracion("2025").mesExpiracion("10").marca(MarcaTarjetaBancaria.MASTERCARD).cliente(clienteAni).banco(bancoSA),
+						TarjetaBancaria.builder().numeroTarjeta("5105032986314174").cvv("654").anioExpiracion("2026").mesExpiracion("09").marca(MarcaTarjetaBancaria.MASTERCARD).cliente(clienteMicke).banco(bancoBPI)
 				)
 				.map(TarjetaBancaria.TarjetaBancariaBuilder::build)
 				.toList();
