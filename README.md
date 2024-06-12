@@ -18,7 +18,7 @@ git clone https://github.com/Axel-Guzman-20/Sistema-pago-.git
 ```
 Entrar en la carpeta
 ```sh
-cd sistema-de-pagos
+cd Sistema-pago-
 ```
 Construye la imagen de Docker:
 ```sh
@@ -44,7 +44,7 @@ git clone https://github.com/Axel-Guzman-20/Sistema-pago-.git
 ```
 Entrar en la carpeta
 ```sh
-cd sistema-de-pagos
+cd Sistema-pago-
 ```
 Compila el proyecto con Maven:
 ```sh
