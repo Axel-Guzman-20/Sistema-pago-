@@ -200,7 +200,7 @@ public class ServicioTransaccion {
         System.out.println("Errores de validación: " + errors);
         return TransaccionResponseDto.builder()
                 .statusCode(400)
-                .message("La transacción no se procesó debido a errores de validación.")
+                .message("Error en la transacción, por favor revisa los datos enviados"  )
                 .transactionId(UUID.randomUUID())
                 .approved(false)
                 .errors(errors)
