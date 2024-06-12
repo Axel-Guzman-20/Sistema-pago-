@@ -73,7 +73,7 @@ public class ServicioTransaccion {
         // Procesar la transacción
         Transaccion transaccion = new Transaccion();
         transaccion.setIdTransaccion(UUID.randomUUID());
-        transaccion.setMonto(transaccionRequest.getAmount().doubleValue());
+        transaccion.setMonto(transaccionRequest.getAmount());
         transaccion.setTransaccionAprobado(true);  // Asumimos que la transacción es aprobada
         transaccion.setTimeStampCharge(new Timestamp(System.currentTimeMillis()));
         transaccion.setCliente(serviciocliente.recuperarClienteByCorreoElectronico(transaccionRequest.getEmail()));
@@ -197,7 +197,6 @@ public class ServicioTransaccion {
     }
 
     private TransaccionResponseDto buildErrorResponse(Map<String, String> errors) {
-        System.out.println("Errores de validación: " + errors);
         return TransaccionResponseDto.builder()
                 .statusCode(400)
                 .message("Error en la transacción, por favor revisa los datos enviados"  )

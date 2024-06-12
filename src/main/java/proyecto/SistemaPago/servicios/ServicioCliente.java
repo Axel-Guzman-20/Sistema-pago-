@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import proyecto.SistemaPago.entidades.Cliente;
-import proyecto.SistemaPago.exceptions.EmailClienteNotFoundException;
 import proyecto.SistemaPago.repositorios.ClienteRepositorio;
-
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service

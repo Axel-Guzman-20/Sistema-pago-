@@ -11,7 +11,6 @@ import proyecto.SistemaPago.enums.MarcaTarjetaBancaria;
 import proyecto.SistemaPago.repositorios.BancoRepositorio;
 import proyecto.SistemaPago.repositorios.ClienteRepositorio;
 import proyecto.SistemaPago.repositorios.TarjetaBancariaRepositorio;
-import proyecto.SistemaPago.repositorios.TransaccionRepositorio;
 
 import java.util.stream.Stream;
 
@@ -24,8 +23,6 @@ public class SistemaPagoApplication {
 	@Autowired
 	private BancoRepositorio repositorioBanco;
 
-	@Autowired
-	private TransaccionRepositorio repositorioCharge;
 
 	@Autowired
 	private ClienteRepositorio repositorioCliente;
