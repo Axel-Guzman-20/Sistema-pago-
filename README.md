@@ -40,7 +40,7 @@ Para visualizar La base de datos H2 puedes ir a http://localhost:8080/h2-console
 # Instalación sin uso de Docker
 Clona el repositorio:
 ```sh
-git clone https://github.com/tuusuario/sistema-de-pagos.git
+git clone https://github.com/Axel-Guzman-20/Sistema-pago-.git
 ```
 Entrar en la carpeta
 ```sh
